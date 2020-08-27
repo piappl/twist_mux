@@ -38,7 +38,8 @@
 #define XMLRPCHELPERS_H
 
 #include <sstream>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
+
 
 namespace xh
 {

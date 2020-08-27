@@ -24,7 +24,7 @@
 #include <twist_mux/twist_mux_diagnostics_status.h>
 
 #include <diagnostic_updater/diagnostic_updater.h>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 #include <boost/shared_ptr.hpp>
 

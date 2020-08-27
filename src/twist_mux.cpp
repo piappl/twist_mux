@@ -33,7 +33,7 @@
  * @param new_twist New velocity
  * @return true is any of the absolute velocity components has increased
  */
-bool hasIncreasedAbsVelocity(const geometry_msgs::Twist& old_twist, const geometry_msgs::Twist& new_twist)
+bool hasIncreasedAbsVelocity(const geometry_msgs::msg::Twist& old_twist, const geometry_msgs::msg::Twist& new_twist)
 {
   const auto old_linear_x = std::abs(old_twist.linear.x);
   const auto new_linear_x = std::abs(new_twist.linear.x);
@@ -48,19 +48,21 @@ bool hasIncreasedAbsVelocity(const geometry_msgs::Twist& old_twist, const geomet
 namespace twist_mux
 {
 
-TwistMux::TwistMux(int window_size)
+TwistMux::TwistMux(int window_size) :
+  rclcpp::Node("twist_mux")
 {
-  ros::NodeHandle nh;
-  ros::NodeHandle nh_priv("~");
+  // !!!!!!!!!!!
+  // ros::NodeHandle nh;
+  // ros::NodeHandle nh_priv("~");
 
   /// Get topics and locks:
   velocity_hs_ = boost::make_shared<velocity_topic_container>();
   lock_hs_     = boost::make_shared<lock_topic_container>();
-  getTopicHandles(nh, nh_priv, "topics", *velocity_hs_);
-  getTopicHandles(nh, nh_priv, "locks" , *lock_hs_ );
+  getTopicHandles("topics", *velocity_hs_);
+  getTopicHandles("locks" , *lock_hs_ );
 
   /// Publisher for output topic:
-  cmd_pub_ = nh.advertise<geometry_msgs::Twist>("cmd_vel_out", 1);
+  cmd_pub_ = create_publisher<geometry_msgs::msg::Twist>("cmd_vel_out", 1);
 
   /// Diagnostics:
   diagnostics_ = boost::make_shared<diagnostics_type>();
@@ -68,51 +70,55 @@ TwistMux::TwistMux(int window_size)
   status_->velocity_hs = velocity_hs_;
   status_->lock_hs     = lock_hs_;
 
-  diagnostics_timer_ = nh.createTimer(ros::Duration(DIAGNOSTICS_PERIOD), &TwistMux::updateDiagnostics, this);
+  diagnostics_timer_ = create_wall_timer(
+    rclcpp::Duration(DIAGNOSTICS_PERIOD, 0.0),
+    std::bind(&TwistMux::updateDiagnostics, this)
+  );
 }
 
-TwistMux::~TwistMux()
+TwistMux::~TwistMux() : rclcpp::Node("twist_mux")
 {}
 
-void TwistMux::updateDiagnostics(const ros::TimerEvent& event)
+void TwistMux::updateDiagnostics()
 {
   status_->priority = getLockPriority();
   diagnostics_->updateStatus(status_);
 }
 
-void TwistMux::publishTwist(const geometry_msgs::TwistConstPtr& msg)
+void TwistMux::publishTwist(const geometry_msgs::msg::Twist::ConstPtr& msg)
 {
-  cmd_pub_.publish(*msg);
+  cmd_pub_->publish(*msg);
 }
 
+// TODO rewrite
 template<typename T>
-void TwistMux::getTopicHandles(ros::NodeHandle& nh, ros::NodeHandle& nh_priv, const std::string& param_name, std::list<T>& topic_hs)
+void TwistMux::getTopicHandles(const std::string& param_name, std::list<T>& topic_hs)
 {
-  try
-  {
-    xh::Array output;
-    xh::fetchParam(nh_priv, param_name, output);
+  // try
+  // {
+  //   xh::Array output;
+  //   xh::fetchParam(nh_priv, param_name, output);
 
-    xh::Struct output_i;
-    std::string name, topic;
-    double timeout;
-    int priority;
-    for (int i = 0; i < output.size(); ++i)
-    {
-      xh::getArrayItem(output, i, output_i);
+  //   xh::Struct output_i;
+  //   std::string name, topic;
+  //   double timeout;
+  //   int priority;
+  //   for (int i = 0; i < output.size(); ++i)
+  //   {
+  //     xh::getArrayItem(output, i, output_i);
 
-      xh::getStructMember(output_i, "name"    , name    );
-      xh::getStructMember(output_i, "topic"   , topic   );
-      xh::getStructMember(output_i, "timeout" , timeout );
-      xh::getStructMember(output_i, "priority", priority);
+  //     xh::getStructMember(output_i, "name"    , name    );
+  //     xh::getStructMember(output_i, "topic"   , topic   );
+  //     xh::getStructMember(output_i, "timeout" , timeout );
+  //     xh::getStructMember(output_i, "priority", priority);
 
-      topic_hs.emplace_back(nh, name, topic, timeout, priority, this);
-    }
-  }
-  catch (const xh::XmlrpcHelperException& e)
-  {
-    ROS_FATAL_STREAM("Error parsing params: " << e.what());
-  }
+  //     topic_hs.emplace_back(this, name, topic, timeout, priority, this);
+  //   }
+  // }
+  // catch (const xh::XmlrpcHelperException& e)
+  // {
+  //   ROS_FATAL_STREAM("Error parsing params: " << e.what());
+  // }
 }
 
 int TwistMux::getLockPriority()
@@ -133,7 +139,7 @@ int TwistMux::getLockPriority()
     }
   }
 
-  ROS_DEBUG_STREAM("Priority = " << static_cast<int>(priority));
+  std::cout << "Priority = " << static_cast<int>(priority) << std::endl;
 
   return priority;
 }

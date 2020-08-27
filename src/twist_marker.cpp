@@ -18,10 +18,10 @@
  * @author Enrique Fernandez
  */
 
-#include <ros/ros.h>
-#include <geometry_msgs/Twist.h>
-#include <visualization_msgs/Marker.h>
-#include <visualization_msgs/MarkerArray.h>
+#include <rclcpp/rclcpp.hpp>
+#include <geometry_msgs/msg/twist.h>
+#include <visualization_msgs/msg/marker.h>
+#include <visualization_msgs/msg/markerArray.h>
 
 #include <string>
 

@@ -89,7 +89,7 @@ void TwistMuxDiagnostics::diagnostics(diagnostic_updater::DiagnosticStatusWrappe
   stat.add("loop time in [sec]", status_.main_loop_time);
   stat.add("data age in [sec]", status_.reading_age);
 
-  ROS_DEBUG_THROTTLE(1.0, "Publishing diagnostics.");
+  RCLCPP_DEBUG_THROTTLE(get_logger(), get_clock(), 1.0, "Publishing diagnostics.");
 }
 
 } // namespace twist_mux

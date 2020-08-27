@@ -22,9 +22,9 @@
 #ifndef TWIST_MUX_H
 #define TWIST_MUX_H
 
-#include <ros/ros.h>
-#include <std_msgs/Bool.h>
-#include <geometry_msgs/Twist.h>
+#include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/bool.h>
+#include <geometry_msgs/msg/twist.h>
 
 #include <list>
 
@@ -41,7 +41,7 @@ class LockTopicHandle;
  * @brief The TwistMux class implements a top-level twist multiplexer module
  * that priorize different velocity command topic inputs according to locks.
  */
-class TwistMux
+class TwistMux : rclcpp::Node
 {
 public:
 
@@ -59,14 +59,14 @@ public:
 
   void publishTwist(const geometry_msgs::TwistConstPtr& msg);
 
-  void updateDiagnostics(const ros::TimerEvent& event);
+  void updateDiagnostics();
 
 protected:
 
   typedef TwistMuxDiagnostics       diagnostics_type;
   typedef TwistMuxDiagnosticsStatus status_type;
 
-  ros::Timer diagnostics_timer_;
+  rclcpp::TimerBase::SharedPtr diagnostics_timer_;
 
   static constexpr double DIAGNOSTICS_PERIOD = 1.0;
 
@@ -82,11 +82,12 @@ protected:
   boost::shared_ptr<velocity_topic_container> velocity_hs_;
   boost::shared_ptr<lock_topic_container>     lock_hs_;
 
-  ros::Publisher cmd_pub_;
+  rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub_;
 
-  geometry_msgs::Twist last_cmd_;
+  geometry_msgs::msg::Twist last_cmd_;
 
   template<typename T>
+  //? is necessary
   void getTopicHandles(ros::NodeHandle& nh, ros::NodeHandle& nh_priv, const std::string& param_name, std::list<T>& topic_hs);
 
   int getLockPriority();

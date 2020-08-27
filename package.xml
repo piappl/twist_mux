@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<package>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>twist_mux</name>
   <version>3.1.1</version>
   <description>
@@ -14,27 +15,26 @@
 
   <license>CC BY-NC-SA 4.0</license>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <build_depend>roscpp</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>geometry_msgs</build_depend>
-  <build_depend>visualization_msgs</build_depend>
-  <build_depend>diagnostic_updater</build_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
 
-  <run_depend>roscpp</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>visualization_msgs</run_depend>
-  <run_depend>twist_mux_msgs</run_depend>
-  <run_depend>diagnostic_updater</run_depend>
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>visualization_msgs</depend>
+  <depend>diagnostic_updater</depend>
 
   <!-- Tests -->
-  <build_depend>rostest</build_depend>
+  <!-- <build_depend>rostest</build_depend>
   <test_depend>rospy</test_depend>
-  <test_depend>rostopic</test_depend>
+  <test_depend>rostopic</test_depend> -->
 
   <export>
+    <build_type>ament_cmake</build_type>
       <rosindex>
           <tags>
               <tag>control</tag>

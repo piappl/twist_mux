@@ -1,57 +1,119 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.5)
 project(twist_mux)
 
-find_package(catkin REQUIRED
-    COMPONENTS
-      roscpp
-      std_msgs
-      geometry_msgs
-      visualization_msgs
-      diagnostic_updater)
+# Default to C99
+if(NOT CMAKE_C_STANDARD)
+  set(CMAKE_C_STANDARD 99)
+endif()
+
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
+find_package(diagnostic_updater REQUIRED)
 
 find_package(Boost REQUIRED)
 
 set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
 
-catkin_package(
-    INCLUDE_DIRS include
-    CATKIN_DEPENDS
-      roscpp
-      std_msgs
-      geometry_msgs
-      visualization_msgs
-      diagnostic_updater)
+# catkin_package(
+#     INCLUDE_DIRS include
+#     CATKIN_DEPENDS
+#       roscpp
+#       std_msgs
+#       geometry_msgs
+#       visualization_msgs
+#       diagnostic_updater)
 
-include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
-
-add_executable(twist_mux
-    src/twist_mux.cpp
-    src/twist_mux_node.cpp
-    src/twist_mux_diagnostics.cpp)
-target_link_libraries(twist_mux ${catkin_LIBRARIES})
-
-add_executable(twist_marker
-    src/twist_marker.cpp)
-target_link_libraries(twist_marker ${catkin_LIBRARIES})
-
-install(TARGETS twist_mux twist_marker
-    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-
-install(PROGRAMS scripts/joystick_relay.py
-    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-
-foreach(dir launch config)
-    install(DIRECTORY ${dir}/
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${dir})
-endforeach()
-
-install(DIRECTORY include/
-   DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
-   FILES_MATCHING PATTERN "*.h"
+include_directories(
+    include
 )
 
-if (CATKIN_ENABLE_TESTING)
-    find_package(rostest REQUIRED)
+add_executable(${PROJECT_NAME}
+    src/twist_mux.cpp
+    src/twist_mux_node.cpp
+    src/twist_mux_diagnostics.cpp
+)
 
-    add_rostest(test/system.test)
+ament_target_dependencies(${PROJECT_NAME}
+    rclcpp
+    std_msgs
+    geometry_msgs
+    diagnostic_updater
+)
+
+install(
+  TARGETS
+  ${PROJECT_NAME}
+  DESTINATION
+  lib/${PROJECT_NAME}
+)
+
+add_executable(twist_marker
+    src/twist_marker.cpp
+)
+
+ament_target_dependencies(twist_marker
+    rclcpp
+    geometry_msgs
+    visualization_msgs
+)
+
+install(
+  TARGETS
+  twist_marker
+  DESTINATION
+  lib/${PROJECT_NAME}
+)
+
+# install(TARGETS twist_mux twist_marker
+#     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+# !!!!!!!!!!!!!!
+# install(PROGRAMS scripts/joystick_relay.py
+#     DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+# Install launch files
+install(
+  DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
+# Install param file
+install(
+  DIRECTORY config
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(DIRECTORY include/
+   DESTINATION include
+)
+
+# if (CATKIN_ENABLE_TESTING)
+#     find_package(rostest REQUIRED)
+
+#     add_rostest(test/system.test)
+# endif()
+
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  # the following line skips the linter which checks for copyrights
+  # uncomment the line when a copyright and license is not present in all source files
+  #set(ament_cmake_copyright_FOUND TRUE)
+  # the following line skips cpplint (only works in a git repo)
+  # uncomment the line when this package is not in a git repo
+  #set(ament_cmake_cpplint_FOUND TRUE)
+  ament_lint_auto_find_test_dependencies()
 endif()
+
+ament_package()

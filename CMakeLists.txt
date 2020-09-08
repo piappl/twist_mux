@@ -59,22 +59,25 @@ install(
   lib/${PROJECT_NAME}
 )
 
-add_executable(twist_marker
-    src/twist_marker.cpp
-)
 
-ament_target_dependencies(twist_marker
-    rclcpp
-    geometry_msgs
-    visualization_msgs
-)
+# TODO uncomment later
+# add_executable(twist_marker
+#     src/twist_marker.cpp
+# )
 
-install(
-  TARGETS
-  twist_marker
-  DESTINATION
-  lib/${PROJECT_NAME}
-)
+# ament_target_dependencies(twist_marker
+#     rclcpp
+#     geometry_msgs
+#     visualization_msgs
+# )
+
+# install(
+#   TARGETS
+#   twist_marker
+#   DESTINATION
+#   lib/${PROJECT_NAME}
+# )
+# TODO END
 
 # install(TARGETS twist_mux twist_marker
 #     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
@@ -86,13 +89,13 @@ install(
 # Install launch files
 install(
   DIRECTORY launch
-  DESTINATION share/${PROJECT_NAME}
+  DESTINATION share/${PROJECT_NAME}/
 )
 
 # Install param file
 install(
   DIRECTORY config
-  DESTINATION share/${PROJECT_NAME}
+  DESTINATION share/${PROJECT_NAME}/
 )
 
 install(DIRECTORY include/

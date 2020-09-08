@@ -19,12 +19,12 @@
  * @author Siegfried Gevatter
  */
 
-#include <twist_mux/twist_mux.h>
-#include <twist_mux/topic_handle.h>
-#include <twist_mux/twist_mux_diagnostics.h>
-#include <twist_mux/twist_mux_diagnostics_status.h>
-#include <twist_mux/utils.h>
-#include <twist_mux/xmlrpc_helpers.h>
+#include <twist_mux/twist_mux.hpp>
+#include <twist_mux/topic_handle.hpp>
+#include <twist_mux/twist_mux_diagnostics.hpp>
+#include <twist_mux/twist_mux_diagnostics_status.hpp>
+#include <twist_mux/utils.hpp>
+// #include <twist_mux/xmlrpc_helpers.h>
 
 /**
  * @brief hasIncreasedAbsVelocity Check if the absolute velocity has increased
@@ -48,39 +48,43 @@ bool hasIncreasedAbsVelocity(const geometry_msgs::msg::Twist& old_twist, const g
 namespace twist_mux
 {
 
-TwistMux::TwistMux(int window_size) :
-  rclcpp::Node("twist_mux")
+TwistMux::TwistMux(std::shared_ptr<rclcpp::Node> node, int window_size) : rclcpp::Node("TWIST_MUX") , nh_(node)
 {
-  // !!!!!!!!!!!
-  // ros::NodeHandle nh;
-  // ros::NodeHandle nh_priv("~");
+  std::cout << "constructor\n";
 
+  // nh_ = node;
   /// Get topics and locks:
-  velocity_hs_ = boost::make_shared<velocity_topic_container>();
-  lock_hs_     = boost::make_shared<lock_topic_container>();
-  getTopicHandles("topics", *velocity_hs_);
+  velocity_hs_ = std::make_shared<velocity_topic_container>();
+  lock_hs_     = std::make_shared<lock_topic_container>();
   getTopicHandles("locks" , *lock_hs_ );
 
+  getTopicHandles("topics", *velocity_hs_);
+
   /// Publisher for output topic:
-  cmd_pub_ = create_publisher<geometry_msgs::msg::Twist>("cmd_vel_out", 1);
+  cmd_pub_ = nh_->create_publisher<geometry_msgs::msg::Twist>("cmd_vel_out", 1);
 
   /// Diagnostics:
-  diagnostics_ = boost::make_shared<diagnostics_type>();
-  status_      = boost::make_shared<status_type>();
+  diagnostics_ = std::make_shared<diagnostics_type>(nh_);
+  status_      = std::make_shared<status_type>();
   status_->velocity_hs = velocity_hs_;
   status_->lock_hs     = lock_hs_;
 
-  diagnostics_timer_ = create_wall_timer(
-    rclcpp::Duration(DIAGNOSTICS_PERIOD, 0.0),
+  diagnostics_timer_ = nh_->create_wall_timer(
+    std::chrono::microseconds(1000000/static_cast<int>(DIAGNOSTICS_FREQUENCY)),
     std::bind(&TwistMux::updateDiagnostics, this)
   );
+  std::cout << "END constructor \n";
+
 }
 
-TwistMux::~TwistMux() : rclcpp::Node("twist_mux")
-{}
+TwistMux::~TwistMux()
+{
+  std::cout << "Destructor \n";
+}
 
 void TwistMux::updateDiagnostics()
 {
+  std::cout << "Diagnostics \n";
   status_->priority = getLockPriority();
   diagnostics_->updateStatus(status_);
 }
@@ -94,6 +98,47 @@ void TwistMux::publishTwist(const geometry_msgs::msg::Twist::ConstPtr& msg)
 template<typename T>
 void TwistMux::getTopicHandles(const std::string& param_name, std::list<T>& topic_hs)
 {
+  std::cout << param_name << std::endl;
+
+  for (int i = 0; i < 100; i++)
+  {
+    std::string name = "";
+    std::string topic = "";
+    double timeout = -1.0;
+    int priority = -1;
+    nh_->declare_parameter(param_name + "." + std::to_string(i) + ".name");
+    nh_->declare_parameter(param_name + "." + std::to_string(i) + ".topic");
+    nh_->declare_parameter(param_name + "." + std::to_string(i) + ".timeout");
+    nh_->declare_parameter(param_name + "." + std::to_string(i) + ".priority");
+
+    nh_->get_parameter(param_name + "." + std::to_string(i) + ".name", name);
+    nh_->get_parameter(param_name + "." + std::to_string(i) + ".topic", topic);
+    nh_->get_parameter(param_name + "." + std::to_string(i) + ".timeout", timeout);
+    nh_->get_parameter(param_name + "." + std::to_string(i) + ".priority", priority);
+    std::cout << param_name + "." + std::to_string(i) + ".name"<< std::endl;
+    std::cout << "name: " << name << std::endl;
+    std::cout << "topic: " << topic << std::endl;
+    std::cout << "timeout: " << timeout << std::endl;
+    std::cout << "priority: " << priority << std::endl;
+    std::cout << std::endl;
+    if(name == "" || topic == "" || timeout == -1.0 || priority == -1)
+    {
+      break;
+    }
+    topic_hs.emplace_back(nh_, name, topic, timeout, priority, this);
+  }
+
+
+  // this->declare_parameter(param_name);
+
+
+
+  // int test;
+  // this->get_parameter(param_name, test);
+  // std::cout << decltype(test) << std::endl;
+  // std::cout << test << std::endl;
+
+
   // try
   // {
   //   xh::Array output;

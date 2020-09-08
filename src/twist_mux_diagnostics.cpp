@@ -18,15 +18,15 @@
  * @author Enrique Fernandez
  */
 
-#include <twist_mux/twist_mux_diagnostics.h>
-#include <twist_mux/twist_mux_diagnostics_status.h>
+#include <twist_mux/twist_mux_diagnostics.hpp>
+#include <twist_mux/twist_mux_diagnostics_status.hpp>
 
-#include <diagnostic_updater/diagnostic_updater.h>
+// #include <diagnostic_updater/diagnostic_updater.h>
 
 namespace twist_mux
 {
 
-TwistMuxDiagnostics::TwistMuxDiagnostics()
+TwistMuxDiagnostics::TwistMuxDiagnostics(std::shared_ptr<rclcpp::Node>& node) : diagnostic_(node)
 {
   diagnostic_.add("Twist mux status", this, &TwistMuxDiagnostics::diagnostics);
   diagnostic_.setHardwareID("none");
@@ -37,12 +37,13 @@ TwistMuxDiagnostics::~TwistMuxDiagnostics()
 
 void TwistMuxDiagnostics::update()
 {
-  diagnostic_.update();
+  diagnostic_.force_update();
 }
 
 void TwistMuxDiagnostics::updateStatus(const status_type::ConstPtr& status)
 {
-  ROS_DEBUG_THROTTLE(1.0, "Updating status.");
+  // TODO uncomment
+  // RCLCPP_DEBUG_THROTTLE(get_logger(), 1.0, "Updating status.");
 
   status_.velocity_hs = status->velocity_hs;
   status_.lock_hs     = status->lock_hs;
@@ -89,7 +90,8 @@ void TwistMuxDiagnostics::diagnostics(diagnostic_updater::DiagnosticStatusWrappe
   stat.add("loop time in [sec]", status_.main_loop_time);
   stat.add("data age in [sec]", status_.reading_age);
 
-  RCLCPP_DEBUG_THROTTLE(get_logger(), get_clock(), 1.0, "Publishing diagnostics.");
+  // TODO uncomment
+  // RCLCPP_DEBUG_THROTTLE(get_logger(), get_clock(), 1.0, "Publishing diagnostics.");
 }
 
 } // namespace twist_mux

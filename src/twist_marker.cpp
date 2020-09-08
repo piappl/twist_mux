@@ -19,9 +19,9 @@
  */
 
 #include <rclcpp/rclcpp.hpp>
-#include <geometry_msgs/msg/twist.h>
-#include <visualization_msgs/msg/marker.h>
-#include <visualization_msgs/msg/markerArray.h>
+#include <geometry_msgs/msg/twist.hpp>
+#include <visualization_msgs/msg/marker.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 
 #include <string>
 
@@ -58,17 +58,17 @@ public:
     marker_.color.b = 0.0;
   }
 
-  void update(const geometry_msgs::Twist& twist)
+  void update(const geometry_msgs::msg::Twist::SharedPtr twist)
   {
-    marker_.points[1].x = twist.linear.x;
+    marker_.points[1].x = twist->linear.x;
 
-    if (fabs(twist.linear.y) > fabs(twist.angular.z))
+    if (fabs(twist->linear.y) > fabs(twist->angular.z))
     {
-      marker_.points[1].y = twist.linear.y;
+      marker_.points[1].y = twist->linear.y;
     }
     else
     {
-      marker_.points[1].y = twist.angular.z;
+      marker_.points[1].y = twist->angular.z;
     }
   }
 
@@ -94,7 +94,7 @@ public:
   {
     ros::NodeHandle nh;
 
-    pub_ = nh.advertise<visualization_msgs::Marker>("marker", 1, true);
+    pub_ = nh.create_publisher<visualization_msgs::msg::Marker>("marker", 1, true);
     sub_ = nh.subscribe("twist", 1, &TwistMarkerPublisher::callback, this);
   }
 

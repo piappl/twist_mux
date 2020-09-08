@@ -21,18 +21,19 @@
 #ifndef TWIST_MUX_DIAGNOSTICS_STATUS_H
 #define TWIST_MUX_DIAGNOSTICS_STATUS_H
 
-#include <twist_mux/twist_mux.h>
-#include <twist_mux/topic_handle.h>
+#include <twist_mux/twist_mux.hpp>
+#include <twist_mux/topic_handle.hpp>
+#include <memory>
 
-#include <ros/time.h>
+// #include <ros/time.h>
 
 namespace twist_mux
 {
 
 struct TwistMuxDiagnosticsStatus
 {
-  typedef boost::shared_ptr<TwistMuxDiagnosticsStatus> Ptr;
-  typedef boost::shared_ptr<const TwistMuxDiagnosticsStatus> ConstPtr;
+  typedef std::shared_ptr<TwistMuxDiagnosticsStatus> Ptr;
+  typedef std::shared_ptr<const TwistMuxDiagnosticsStatus> ConstPtr;
 
   double reading_age;
   rclcpp::Time last_loop_update;
@@ -40,12 +41,12 @@ struct TwistMuxDiagnosticsStatus
 
   LockTopicHandle::priority_type priority;
 
-  boost::shared_ptr<TwistMux::velocity_topic_container> velocity_hs;
-  boost::shared_ptr<TwistMux::lock_topic_container>     lock_hs;
+  std::shared_ptr<TwistMux::velocity_topic_container> velocity_hs;
+  std::shared_ptr<TwistMux::lock_topic_container>     lock_hs;
 
   TwistMuxDiagnosticsStatus()
     : reading_age(0),
-      last_loop_update(rclcpp::Time::now()),
+      last_loop_update(rclcpp::Clock().now()),
       main_loop_time(0),
       priority(0)
   {

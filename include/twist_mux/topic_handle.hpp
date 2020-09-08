@@ -23,14 +23,14 @@
 #define TOPIC_HANDLE_H
 
 #include <rclcpp/rclcpp.hpp>
-#include <std_msgs/msg/bool.h>
-#include <geometry_msgs/msg/twist.h>
+#include <std_msgs/msg/bool.hpp>
+#include <geometry_msgs/msg/twist.hpp>
 
-#include <twist_mux/utils.h>
-#include <twist_mux/twist_mux.h>
+#include <twist_mux/utils.hpp>
+#include <twist_mux/twist_mux.hpp>
 
 #include <boost/utility.hpp>
-#include <boost/scoped_ptr.hpp>
+#include <memory>
 
 #include <string>
 #include <vector>
@@ -39,7 +39,7 @@ namespace twist_mux
 {
 
 template<typename T>
-class TopicHandle_ : public rclcpp::Node, public boost::noncopyable
+class TopicHandle_ :public boost::noncopyable
 {
 public:
 
@@ -54,8 +54,8 @@ public:
    * expired
    * @param priority Priority of the topic
    */
-  TopicHandle_(std::shared_ptr<rclcpp::Node> node, const std::string& name, const std::string& topic, double timeout, priority_type priority, TwistMux* mux)
-    :
+  TopicHandle_(std::shared_ptr<rclcpp::Node>& node, const std::string& name, const std::string& topic, double timeout, priority_type priority, TwistMux* mux)
+    : nh_(node)
     , name_(name)
     , topic_(topic)
     , timeout_(timeout)
@@ -63,9 +63,9 @@ public:
     , mux_(mux)
     , stamp_(0.0)
   {
-    ROS_INFO_STREAM
+    RCLCPP_INFO_STREAM
     (
-      nh_ = node;
+      nh_->get_logger(),
       "Topic handler '" << name_ << "' subscribed to topic '" << topic_ <<
       "': timeout = " << ((timeout_) ? std::to_string(timeout_) + "s" : "None") <<
       ", priority = " << static_cast<int>(priority_)
@@ -87,7 +87,7 @@ public:
   bool hasExpired() const
   {
     return (timeout_ > 0.0) and
-           ((now() - stamp_).nanoseconds() / 1e9 > timeout_);
+           ((nh_->now() - stamp_).nanoseconds() / 1e9 > timeout_);
   }
 
   const std::string& getName() const
@@ -128,7 +128,7 @@ protected:
 
   std::string name_;
   std::string topic_;
-  rclcpp::Subscription<T>::SharedPtr subscriber_;
+  typename rclcpp::Subscription<T>::SharedPtr subscriber_;
   double timeout_;
   priority_type priority_;
 
@@ -147,10 +147,10 @@ private:
 public:
   typedef typename base_type::priority_type priority_type;
 
-  VelocityTopicHandle(std::shared_ptr<rclcpp::Node> node, const std::string& name, const std::string& topic, double timeout, priority_type priority, TwistMux* mux)
+  VelocityTopicHandle(std::shared_ptr<rclcpp::Node>& node, const std::string& name, const std::string& topic, double timeout, priority_type priority, TwistMux* mux)
     : base_type(node, name, topic, timeout, priority, mux)
   {
-    subscriber_ = create_subscription<geometry_msgs::msg::Twist> (
+    subscriber_ = nh_->create_subscription<geometry_msgs::msg::Twist> (
       topic_,
       1,
       std::bind(&VelocityTopicHandle::callback, this, std::placeholders::_1)
@@ -164,7 +164,8 @@ public:
 
   void callback(const geometry_msgs::msg::Twist::SharedPtr msg)
   {
-    stamp_ = now();
+    std::cout << "velo callback \n";
+    stamp_ = nh_->now();
     msg_   = *msg;
 
     // Check if this twist has priority.
@@ -186,10 +187,10 @@ private:
 public:
   typedef typename base_type::priority_type priority_type;
 
-  LockTopicHandle(std::shared_ptr<rclcpp::Node> node, const std::string& name, const std::string& topic, double timeout, priority_type priority, TwistMux* mux)
+  LockTopicHandle(std::shared_ptr<rclcpp::Node>& node, const std::string& name, const std::string& topic, double timeout, priority_type priority, TwistMux* mux)
     : base_type(node, name, topic, timeout, priority, mux)
   {
-    subscriber_ = create_subscription<std_msgs::msg::Bool> (
+    subscriber_ = nh_->create_subscription<std_msgs::msg::Bool> (
       topic_,
       1,
       std::bind(&LockTopicHandle::callback, this, std::placeholders::_1)
@@ -205,9 +206,9 @@ public:
     return hasExpired() or getMessage().data;
   }
 
-  void callback(const std_msgs::BoolConstPtr& msg)
+  void callback(const std_msgs::msg::Bool::ConstPtr msg)
   {
-    stamp_ = now();
+    stamp_ = nh_->now();
     msg_   = *msg;
   }
 };

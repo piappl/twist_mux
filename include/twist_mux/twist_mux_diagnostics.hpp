@@ -21,12 +21,12 @@
 #ifndef TWIST_MUX_DIAGNOSTICS_H
 #define TWIST_MUX_DIAGNOSTICS_H
 
-#include <twist_mux/twist_mux_diagnostics_status.h>
+#include <twist_mux/twist_mux_diagnostics_status.hpp>
 
-#include <diagnostic_updater/diagnostic_updater.h>
+#include <diagnostic_updater/diagnostic_updater.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 namespace twist_mux
 {
@@ -39,7 +39,7 @@ class TwistMuxDiagnostics
     static constexpr double MAIN_LOOP_TIME_MIN = 0.2; // [s]
     static constexpr double READING_AGE_MIN    = 3.0; // [s]
 
-    TwistMuxDiagnostics();
+    TwistMuxDiagnostics(std::shared_ptr<rclcpp::Node>& node);
     virtual ~TwistMuxDiagnostics();
 
     void diagnostics(diagnostic_updater::DiagnosticStatusWrapper& stat);
@@ -55,9 +55,9 @@ class TwistMuxDiagnostics
      */
     enum
     {
-      OK    = diagnostic_msgs::DiagnosticStatus::OK,
-      WARN  = diagnostic_msgs::DiagnosticStatus::WARN,
-      ERROR = diagnostic_msgs::DiagnosticStatus::ERROR
+      OK    = diagnostic_msgs::msg::DiagnosticStatus::OK,
+      WARN  = diagnostic_msgs::msg::DiagnosticStatus::WARN,
+      ERROR = diagnostic_msgs::msg::DiagnosticStatus::ERROR
     };
 
     diagnostic_updater::Updater diagnostic_;

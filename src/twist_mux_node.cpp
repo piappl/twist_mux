@@ -19,15 +19,21 @@
  * @author Siegfried Gevatter
  */
 
-#include <twist_mux/twist_mux.h>
+#include <twist_mux/twist_mux.hpp>
 
 int main(int argc, char *argv[])
 {
   rclcpp::init(argc, argv);
-
-  std::shared_ptr<twist_mux::TwistMux> mux = std::make_shared<twist_mux::TwistMux>();
-
-  rclcpp:spin(mux);
+  std::cout << "node\n";
+  std::shared_ptr<rclcpp::Node> node = std::make_shared<rclcpp::Node>("twist_mux");
+  std::cout << "node init\n";
+  std::shared_ptr<twist_mux::TwistMux> mux = std::make_shared<twist_mux::TwistMux>(node);
+  std::cout << "mux\n";
+  rclcpp::spin(mux);
+  std::cout << "spin\n";
+  std::cout << "spin\n";
+  std::cout << "spin\n";
+  std::cout << "spin\n";
   rclcpp::shutdown();
 
   return 0;

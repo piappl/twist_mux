@@ -23,8 +23,9 @@
 #define TWIST_MUX_H
 
 #include <rclcpp/rclcpp.hpp>
-#include <std_msgs/msg/bool.h>
-#include <geometry_msgs/msg/twist.h>
+#include <std_msgs/msg/bool.hpp>
+#include <geometry_msgs/msg/twist.hpp>
+#include <memory>
 
 #include <list>
 
@@ -41,7 +42,7 @@ class LockTopicHandle;
  * @brief The TwistMux class implements a top-level twist multiplexer module
  * that priorize different velocity command topic inputs according to locks.
  */
-class TwistMux : rclcpp::Node
+class TwistMux : public rclcpp::Node
 {
 public:
 
@@ -52,12 +53,12 @@ public:
   typedef std::list<VelocityTopicHandle> velocity_topic_container;
   typedef std::list<LockTopicHandle>     lock_topic_container;
 
-  TwistMux(int window_size = 10);
+  TwistMux(std::shared_ptr<rclcpp::Node> node, int window_size = 10);
   ~TwistMux();
 
   bool hasPriority(const VelocityTopicHandle& twist);
 
-  void publishTwist(const geometry_msgs::TwistConstPtr& msg);
+  void publishTwist(const geometry_msgs::msg::Twist::ConstPtr& msg);
 
   void updateDiagnostics();
 
@@ -68,7 +69,7 @@ protected:
 
   rclcpp::TimerBase::SharedPtr diagnostics_timer_;
 
-  static constexpr double DIAGNOSTICS_PERIOD = 1.0;
+  static constexpr double DIAGNOSTICS_FREQUENCY = 1.0;
 
   /**
    * @brief velocity_hs_ Velocity topics' handles.
@@ -79,21 +80,22 @@ protected:
   // @todo use handle_container (see above)
   //handle_container<VelocityTopicHandle> velocity_hs_;
   //handle_container<LockTopicHandle> lock_hs_;
-  boost::shared_ptr<velocity_topic_container> velocity_hs_;
-  boost::shared_ptr<lock_topic_container>     lock_hs_;
+  std::shared_ptr<velocity_topic_container> velocity_hs_;
+  std::shared_ptr<lock_topic_container>     lock_hs_;
+  std::shared_ptr<rclcpp::Node>             nh_;
 
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub_;
 
   geometry_msgs::msg::Twist last_cmd_;
 
-  template<typename T>
   //? is necessary
-  void getTopicHandles(ros::NodeHandle& nh, ros::NodeHandle& nh_priv, const std::string& param_name, std::list<T>& topic_hs);
+  template<typename T>
+  void getTopicHandles(const std::string& param_name, std::list<T>& topic_hs);
 
   int getLockPriority();
 
-  boost::shared_ptr<diagnostics_type> diagnostics_;
-  boost::shared_ptr<status_type>      status_;
+  std::shared_ptr<diagnostics_type> diagnostics_;
+  std::shared_ptr<status_type>      status_;
 };
 
 } // namespace twist_mux

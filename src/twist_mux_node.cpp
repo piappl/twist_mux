@@ -19,15 +19,22 @@
  * @author Siegfried Gevatter
  */
 
+// Force flush of the stdout buffer.
+// This ensures a correct sync of all prints
+// even when executed simultaneously within the launch file.
+
+
 #include <twist_mux/twist_mux.hpp>
 
 int main(int argc, char *argv[])
 {
+  setvbuf(stdout, NULL, _IONBF, BUFSIZ);
   rclcpp::init(argc, argv);
   std::cout << "node\n";
-  std::shared_ptr<rclcpp::Node> node = std::make_shared<rclcpp::Node>("twist_mux");
+  // std::shared_ptr<rclcpp::Node> node = std::make_shared<rclcpp::Node>("twist_mux");
   std::cout << "node init\n";
-  std::shared_ptr<twist_mux::TwistMux> mux = std::make_shared<twist_mux::TwistMux>(node);
+  std::shared_ptr<twist_mux::TwistMux> mux = std::make_shared<twist_mux::TwistMux>();
+  mux->init(mux);
   std::cout << "mux\n";
   rclcpp::spin(mux);
   std::cout << "spin\n";

@@ -61,7 +61,7 @@ public:
     , timeout_(timeout)
     , priority_(clamp(priority, priority_type(0), priority_type(255)))
     , mux_(mux)
-    , stamp_(0.0)
+    , stamp_(nh_->now())
   {
     RCLCPP_INFO_STREAM
     (
@@ -164,7 +164,6 @@ public:
 
   void callback(const geometry_msgs::msg::Twist::SharedPtr msg)
   {
-    std::cout << "velo callback \n";
     stamp_ = nh_->now();
     msg_   = *msg;
 

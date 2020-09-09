@@ -48,33 +48,33 @@ bool hasIncreasedAbsVelocity(const geometry_msgs::msg::Twist& old_twist, const g
 namespace twist_mux
 {
 
-TwistMux::TwistMux(std::shared_ptr<rclcpp::Node> node, int window_size) : rclcpp::Node("TWIST_MUX") , nh_(node)
+TwistMux::TwistMux() : rclcpp::Node("twist_mux")
 {
-  std::cout << "constructor\n";
+}
 
+void TwistMux::init(std::shared_ptr<rclcpp::Node> node)
+{
   // nh_ = node;
   /// Get topics and locks:
   velocity_hs_ = std::make_shared<velocity_topic_container>();
   lock_hs_     = std::make_shared<lock_topic_container>();
-  getTopicHandles("locks" , *lock_hs_ );
+  getTopicHandles(node, "locks" , *lock_hs_ );
 
-  getTopicHandles("topics", *velocity_hs_);
+  getTopicHandles(node, "topics", *velocity_hs_);
 
   /// Publisher for output topic:
-  cmd_pub_ = nh_->create_publisher<geometry_msgs::msg::Twist>("cmd_vel_out", 1);
+  cmd_pub_ = create_publisher<geometry_msgs::msg::Twist>("cmd_vel_out", 1);
 
   /// Diagnostics:
-  diagnostics_ = std::make_shared<diagnostics_type>(nh_);
-  status_      = std::make_shared<status_type>();
-  status_->velocity_hs = velocity_hs_;
-  status_->lock_hs     = lock_hs_;
+  // diagnostics_ = std::make_shared<diagnostics_type>(node);
+//  status_      = std::make_shared<status_type>();
+//  status_->velocity_hs = velocity_hs_;
+//  status_->lock_hs     = lock_hs_;
 
-  diagnostics_timer_ = nh_->create_wall_timer(
-    std::chrono::microseconds(1000000/static_cast<int>(DIAGNOSTICS_FREQUENCY)),
-    std::bind(&TwistMux::updateDiagnostics, this)
-  );
-  std::cout << "END constructor \n";
-
+  // diagnostics_timer_ = create_wall_timer(
+  //   std::chrono::microseconds(1000000/static_cast<int>(DIAGNOSTICS_FREQUENCY)),
+  //   std::bind(&TwistMux::updateDiagnostics, this)
+  // );
 }
 
 TwistMux::~TwistMux()
@@ -96,36 +96,28 @@ void TwistMux::publishTwist(const geometry_msgs::msg::Twist::ConstPtr& msg)
 
 // TODO rewrite
 template<typename T>
-void TwistMux::getTopicHandles(const std::string& param_name, std::list<T>& topic_hs)
+void TwistMux::getTopicHandles(std::shared_ptr<rclcpp::Node> node, const std::string& param_name, std::list<T>& topic_hs)
 {
-  std::cout << param_name << std::endl;
-
   for (int i = 0; i < 100; i++)
   {
     std::string name = "";
     std::string topic = "";
     double timeout = -1.0;
     int priority = -1;
-    nh_->declare_parameter(param_name + "." + std::to_string(i) + ".name");
-    nh_->declare_parameter(param_name + "." + std::to_string(i) + ".topic");
-    nh_->declare_parameter(param_name + "." + std::to_string(i) + ".timeout");
-    nh_->declare_parameter(param_name + "." + std::to_string(i) + ".priority");
+    this->declare_parameter(param_name + "." + std::to_string(i) + ".name");
+    this->declare_parameter(param_name + "." + std::to_string(i) + ".topic");
+    this->declare_parameter(param_name + "." + std::to_string(i) + ".timeout");
+    this->declare_parameter(param_name + "." + std::to_string(i) + ".priority");
 
-    nh_->get_parameter(param_name + "." + std::to_string(i) + ".name", name);
-    nh_->get_parameter(param_name + "." + std::to_string(i) + ".topic", topic);
-    nh_->get_parameter(param_name + "." + std::to_string(i) + ".timeout", timeout);
-    nh_->get_parameter(param_name + "." + std::to_string(i) + ".priority", priority);
-    std::cout << param_name + "." + std::to_string(i) + ".name"<< std::endl;
-    std::cout << "name: " << name << std::endl;
-    std::cout << "topic: " << topic << std::endl;
-    std::cout << "timeout: " << timeout << std::endl;
-    std::cout << "priority: " << priority << std::endl;
-    std::cout << std::endl;
+    this->get_parameter(param_name + "." + std::to_string(i) + ".name", name);
+    this->get_parameter(param_name + "." + std::to_string(i) + ".topic", topic);
+    this->get_parameter(param_name + "." + std::to_string(i) + ".timeout", timeout);
+    this->get_parameter(param_name + "." + std::to_string(i) + ".priority", priority);
     if(name == "" || topic == "" || timeout == -1.0 || priority == -1)
     {
       break;
     }
-    topic_hs.emplace_back(nh_, name, topic, timeout, priority, this);
+    topic_hs.emplace_back(node, name, topic, timeout, priority, this);
   }
 
 
@@ -177,6 +169,7 @@ int TwistMux::getLockPriority()
     if (lock_h.isLocked())
     {
       auto tmp = lock_h.getPriority();
+      std::cout << "tmp: " << tmp << std::endl;
       if (priority < tmp)
       {
         priority = tmp;
@@ -200,9 +193,13 @@ bool TwistMux::hasPriority(const VelocityTopicHandle& twist)
   /// that is NOT masked by the lock priority:
   for (const auto& velocity_h : *velocity_hs_)
   {
+    std::cout << "velo name: " << velocity_h.getName() << std::endl;
     if (not velocity_h.isMasked(lock_priority))
     {
+      std::cout << "not masked\n";
       const auto velocity_priority = velocity_h.getPriority();
+      std::cout << "lock_priority: " << lock_priority << std::endl;
+      std::cout << "velocity_priority: " << velocity_priority << std::endl;
       if (priority < velocity_priority)
       {
         priority = velocity_priority;
@@ -210,6 +207,7 @@ bool TwistMux::hasPriority(const VelocityTopicHandle& twist)
       }
     }
   }
+  std::cout << "VELOCITY NAME: " << velocity_name << std::endl;
 
   return twist.getName() == velocity_name;
 }

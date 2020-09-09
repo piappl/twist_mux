@@ -53,10 +53,12 @@ public:
   typedef std::list<VelocityTopicHandle> velocity_topic_container;
   typedef std::list<LockTopicHandle>     lock_topic_container;
 
-  TwistMux(std::shared_ptr<rclcpp::Node> node, int window_size = 10);
+  TwistMux();
   ~TwistMux();
 
   bool hasPriority(const VelocityTopicHandle& twist);
+
+  void init(std::shared_ptr<rclcpp::Node> node);
 
   void publishTwist(const geometry_msgs::msg::Twist::ConstPtr& msg);
 
@@ -90,7 +92,7 @@ protected:
 
   //? is necessary
   template<typename T>
-  void getTopicHandles(const std::string& param_name, std::list<T>& topic_hs);
+  void getTopicHandles(std::shared_ptr<rclcpp::Node> node, const std::string& param_name, std::list<T>& topic_hs);
 
   int getLockPriority();
 

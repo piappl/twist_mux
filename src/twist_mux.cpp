@@ -54,7 +54,6 @@ TwistMux::TwistMux() : rclcpp::Node("twist_mux")
 
 void TwistMux::init(std::shared_ptr<rclcpp::Node> node)
 {
-  // nh_ = node;
   /// Get topics and locks:
   velocity_hs_ = std::make_shared<velocity_topic_container>();
   lock_hs_     = std::make_shared<lock_topic_container>();
@@ -67,9 +66,9 @@ void TwistMux::init(std::shared_ptr<rclcpp::Node> node)
 
   /// Diagnostics:
   // diagnostics_ = std::make_shared<diagnostics_type>(node);
-//  status_      = std::make_shared<status_type>();
-//  status_->velocity_hs = velocity_hs_;
-//  status_->lock_hs     = lock_hs_;
+  // status_      = std::make_shared<status_type>();
+  // status_->velocity_hs = velocity_hs_;
+  // status_->lock_hs     = lock_hs_;
 
   // diagnostics_timer_ = create_wall_timer(
   //   std::chrono::microseconds(1000000/static_cast<int>(DIAGNOSTICS_FREQUENCY)),
@@ -79,12 +78,10 @@ void TwistMux::init(std::shared_ptr<rclcpp::Node> node)
 
 TwistMux::~TwistMux()
 {
-  std::cout << "Destructor \n";
 }
 
 void TwistMux::updateDiagnostics()
 {
-  std::cout << "Diagnostics \n";
   status_->priority = getLockPriority();
   diagnostics_->updateStatus(status_);
 }
@@ -94,7 +91,6 @@ void TwistMux::publishTwist(const geometry_msgs::msg::Twist::ConstPtr& msg)
   cmd_pub_->publish(*msg);
 }
 
-// TODO rewrite
 template<typename T>
 void TwistMux::getTopicHandles(std::shared_ptr<rclcpp::Node> node, const std::string& param_name, std::list<T>& topic_hs)
 {
@@ -119,43 +115,6 @@ void TwistMux::getTopicHandles(std::shared_ptr<rclcpp::Node> node, const std::st
     }
     topic_hs.emplace_back(node, name, topic, timeout, priority, this);
   }
-
-
-  // this->declare_parameter(param_name);
-
-
-
-  // int test;
-  // this->get_parameter(param_name, test);
-  // std::cout << decltype(test) << std::endl;
-  // std::cout << test << std::endl;
-
-
-  // try
-  // {
-  //   xh::Array output;
-  //   xh::fetchParam(nh_priv, param_name, output);
-
-  //   xh::Struct output_i;
-  //   std::string name, topic;
-  //   double timeout;
-  //   int priority;
-  //   for (int i = 0; i < output.size(); ++i)
-  //   {
-  //     xh::getArrayItem(output, i, output_i);
-
-  //     xh::getStructMember(output_i, "name"    , name    );
-  //     xh::getStructMember(output_i, "topic"   , topic   );
-  //     xh::getStructMember(output_i, "timeout" , timeout );
-  //     xh::getStructMember(output_i, "priority", priority);
-
-  //     topic_hs.emplace_back(this, name, topic, timeout, priority, this);
-  //   }
-  // }
-  // catch (const xh::XmlrpcHelperException& e)
-  // {
-  //   ROS_FATAL_STREAM("Error parsing params: " << e.what());
-  // }
 }
 
 int TwistMux::getLockPriority()
@@ -169,7 +128,6 @@ int TwistMux::getLockPriority()
     if (lock_h.isLocked())
     {
       auto tmp = lock_h.getPriority();
-      std::cout << "tmp: " << tmp << std::endl;
       if (priority < tmp)
       {
         priority = tmp;
@@ -177,7 +135,6 @@ int TwistMux::getLockPriority()
     }
   }
 
-  std::cout << "Priority = " << static_cast<int>(priority) << std::endl;
 
   return priority;
 }
@@ -193,13 +150,9 @@ bool TwistMux::hasPriority(const VelocityTopicHandle& twist)
   /// that is NOT masked by the lock priority:
   for (const auto& velocity_h : *velocity_hs_)
   {
-    std::cout << "velo name: " << velocity_h.getName() << std::endl;
     if (not velocity_h.isMasked(lock_priority))
     {
-      std::cout << "not masked\n";
       const auto velocity_priority = velocity_h.getPriority();
-      std::cout << "lock_priority: " << lock_priority << std::endl;
-      std::cout << "velocity_priority: " << velocity_priority << std::endl;
       if (priority < velocity_priority)
       {
         priority = velocity_priority;
@@ -207,7 +160,6 @@ bool TwistMux::hasPriority(const VelocityTopicHandle& twist)
       }
     }
   }
-  std::cout << "VELOCITY NAME: " << velocity_name << std::endl;
 
   return twist.getName() == velocity_name;
 }

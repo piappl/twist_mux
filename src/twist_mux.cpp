@@ -65,15 +65,16 @@ void TwistMux::init(std::shared_ptr<rclcpp::Node> node)
   cmd_pub_ = create_publisher<geometry_msgs::msg::Twist>("cmd_vel_out", 1);
 
   /// Diagnostics:
-  // diagnostics_ = std::make_shared<diagnostics_type>(node);
-  // status_      = std::make_shared<status_type>();
-  // status_->velocity_hs = velocity_hs_;
-  // status_->lock_hs     = lock_hs_;
+  status_      = std::make_shared<status_type>();
+  status_->velocity_hs = velocity_hs_;
+  status_->lock_hs     = lock_hs_;
+  diagnostics_ = std::make_shared<diagnostics_type>(node, status_);
 
-  // diagnostics_timer_ = create_wall_timer(
-  //   std::chrono::microseconds(1000000/static_cast<int>(DIAGNOSTICS_FREQUENCY)),
-  //   std::bind(&TwistMux::updateDiagnostics, this)
-  // );
+
+  diagnostics_timer_ = create_wall_timer(
+    std::chrono::microseconds(1000000/static_cast<int>(DIAGNOSTICS_FREQUENCY)),
+    std::bind(&TwistMux::updateDiagnostics, this)
+  );
 }
 
 TwistMux::~TwistMux()

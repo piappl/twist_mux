@@ -26,15 +26,6 @@ find_package(Boost REQUIRED)
 
 set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
 
-# catkin_package(
-#     INCLUDE_DIRS include
-#     CATKIN_DEPENDS
-#       roscpp
-#       std_msgs
-#       geometry_msgs
-#       visualization_msgs
-#       diagnostic_updater)
-
 include_directories(
     include
 )
@@ -59,25 +50,22 @@ install(
   lib/${PROJECT_NAME}
 )
 
+add_executable(twist_marker
+    src/twist_marker.cpp
+)
 
-# TODO uncomment later
-# add_executable(twist_marker
-#     src/twist_marker.cpp
-# )
+ament_target_dependencies(twist_marker
+    rclcpp
+    geometry_msgs
+    visualization_msgs
+)
 
-# ament_target_dependencies(twist_marker
-#     rclcpp
-#     geometry_msgs
-#     visualization_msgs
-# )
-
-# install(
-#   TARGETS
-#   twist_marker
-#   DESTINATION
-#   lib/${PROJECT_NAME}
-# )
-# TODO END
+install(
+  TARGETS
+  twist_marker
+  DESTINATION
+  lib/${PROJECT_NAME}
+)
 
 # install(TARGETS twist_mux twist_marker
 #     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
@@ -98,6 +86,7 @@ install(
   DESTINATION share/${PROJECT_NAME}/
 )
 
+# Install param file
 install(DIRECTORY include/
    DESTINATION include
 )

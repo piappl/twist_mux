@@ -18,25 +18,22 @@
  * @author Enrique Fernandez
  */
 
-#include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/twist.hpp>
+#include <rclcpp/rclcpp.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
 #include <string>
+#include <cmath>
 
-class TwistMarker
-{
+class TwistMarker {
 public:
-
-  TwistMarker(double scale = 1.0, double z = 0.0, const std::string& frame_id = "base_footprint")
-    : frame_id_(frame_id)
-    , scale_(scale)
-    , z_(z)
-  {
+  TwistMarker(double scale = 1.0, double z = 0.0,
+              const std::string &frame_id = "base_link")
+      : frame_id_(frame_id), scale_(scale), z_(z) {
     // ID and type:
     marker_.id = 0;
-    marker_.type = visualization_msgs::Marker::ARROW;
+    marker_.type = visualization_msgs::msg::Marker::ARROW;
 
     // Frame ID:
     marker_.header.frame_id = frame_id_;
@@ -58,72 +55,77 @@ public:
     marker_.color.b = 0.0;
   }
 
-  void update(const geometry_msgs::msg::Twist::SharedPtr twist)
-  {
+  void update(const geometry_msgs::msg::Twist::SharedPtr twist) {
     marker_.points[1].x = twist->linear.x;
 
-    if (fabs(twist->linear.y) > fabs(twist->angular.z))
-    {
+    if (fabs(twist->linear.y) > fabs(twist->angular.z)) {
       marker_.points[1].y = twist->linear.y;
-    }
-    else
-    {
+    } else {
       marker_.points[1].y = twist->angular.z;
     }
   }
 
-  const visualization_msgs::Marker& getMarker()
-  {
-    return marker_;
-  }
+  const visualization_msgs::msg::Marker &getMarker() { return marker_; }
 
 private:
-  visualization_msgs::Marker marker_;
+  visualization_msgs::msg::Marker marker_;
 
   std::string frame_id_;
   double scale_;
   double z_;
 };
 
-class TwistMarkerPublisher
-{
+class TwistMarkerPublisher : public rclcpp::Node {
 public:
-
-  TwistMarkerPublisher(double scale = 1.0, double z = 0.0)
-    : marker_(scale, z)
+  TwistMarkerPublisher(double scale = 1.0, double z = 0.0) :
+      rclcpp::Node("twist_marker"),
+      marker_(scale, z)
   {
-    ros::NodeHandle nh;
 
-    pub_ = nh.create_publisher<visualization_msgs::msg::Marker>("marker", 1, true);
-    sub_ = nh.subscribe("twist", 1, &TwistMarkerPublisher::callback, this);
+    pub_ = create_publisher<visualization_msgs::msg::Marker>("twist_marker", 1);
+    sub_ = create_subscription<geometry_msgs::msg::Twist> (
+      "cmd_vel_out",
+      1,
+      std::bind(&TwistMarkerPublisher::callback, this, std::placeholders::_1)
+    );
   }
 
-  void callback(const geometry_msgs::TwistConstPtr& twist)
-  {
-    marker_.update(*twist);
+  void callback(const geometry_msgs::msg::Twist::SharedPtr twist) {
+    marker_.update(twist);
 
-    pub_.publish(marker_.getMarker());
+    pub_->publish(marker_.getMarker());
   }
 
 private:
-  ros::Subscriber sub_;
-  ros::Publisher  pub_;
+  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_;
+  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr pub_;
 
   TwistMarker marker_;
 };
 
-int
-main(int argc, char *argv[])
-{
-  ros::init(argc, argv, "twist_marker");
+int main(int argc, char *argv[]) {
+  setvbuf(stdout, NULL, _IONBF, BUFSIZ);
+  rclcpp::init(argc, argv);
+  std::shared_ptr<TwistMarkerPublisher> marker = std::make_shared<TwistMarkerPublisher>(1.0, 2.0);
 
-  TwistMarkerPublisher t(1.0, 2.0);
+  rclcpp::spin(marker);
+  rclcpp::shutdown();
 
-  while (ros::ok())
-  {
-    ros::spin();
-  }
+  // TwistMarkerPublisher t(1.0, 2.0);
+
+  // while (ros::ok()) {
+  //   ros::spin();
+  // }
 
   return EXIT_SUCCESS;
-}
 
+
+  // setvbuf(stdout, NULL, _IONBF, BUFSIZ);
+  // rclcpp::init(argc, argv);
+  // std::shared_ptr<twist_mux::TwistMux> mux = std::make_shared<twist_mux::TwistMux>();
+  // mux->init(mux);
+  // rclcpp::spin(mux);
+  // rclcpp::shutdown();
+
+  // return 0;
+}

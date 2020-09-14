@@ -24,7 +24,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/bool.hpp>
-#include <geometry_msgs/msg/twist.hpp>
+#include <ackermann_msgs/msg/ackermann_drive.hpp>
 #include <memory>
 
 #include <list>
@@ -60,7 +60,7 @@ public:
 
   void init(std::shared_ptr<rclcpp::Node> node);
 
-  void publishTwist(const geometry_msgs::msg::Twist::ConstPtr& msg);
+  void publishTwist(const ackermann_msgs::msg::AckermannDrive::ConstPtr& msg);
 
   void updateDiagnostics();
 
@@ -86,9 +86,9 @@ protected:
   std::shared_ptr<lock_topic_container>     lock_hs_;
   std::shared_ptr<rclcpp::Node>             nh_;
 
-  rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub_;
+  rclcpp::Publisher<ackermann_msgs::msg::AckermannDrive>::SharedPtr cmd_pub_;
 
-  geometry_msgs::msg::Twist last_cmd_;
+  ackermann_msgs::msg::AckermannDrive last_cmd_;
 
   //? is necessary
   template<typename T>

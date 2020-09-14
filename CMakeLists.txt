@@ -18,7 +18,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)
+find_package(ackermann_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(diagnostic_updater REQUIRED)
 
@@ -39,7 +39,7 @@ add_executable(${PROJECT_NAME}
 ament_target_dependencies(${PROJECT_NAME}
     rclcpp
     std_msgs
-    geometry_msgs
+    ackermann_msgs
     diagnostic_updater
 )
 
@@ -56,7 +56,7 @@ add_executable(twist_marker
 
 ament_target_dependencies(twist_marker
     rclcpp
-    geometry_msgs
+    ackermann_msgs
     visualization_msgs
 )
 

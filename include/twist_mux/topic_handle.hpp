@@ -24,7 +24,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/bool.hpp>
-#include <geometry_msgs/msg/twist.hpp>
+#include <ackermann_msgs/msg/ackermann_drive.hpp>
 
 #include <twist_mux/utils.hpp>
 #include <twist_mux/twist_mux.hpp>
@@ -139,10 +139,10 @@ protected:
   T msg_;
 };
 
-class VelocityTopicHandle : public TopicHandle_<geometry_msgs::msg::Twist>
+class VelocityTopicHandle : public TopicHandle_<ackermann_msgs::msg::AckermannDrive>
 {
 private:
-  typedef TopicHandle_<geometry_msgs::msg::Twist> base_type;
+  typedef TopicHandle_<ackermann_msgs::msg::AckermannDrive> base_type;
 
 public:
   typedef typename base_type::priority_type priority_type;
@@ -150,7 +150,7 @@ public:
   VelocityTopicHandle(std::shared_ptr<rclcpp::Node>& node, const std::string& name, const std::string& topic, double timeout, priority_type priority, TwistMux* mux)
     : base_type(node, name, topic, timeout, priority, mux)
   {
-    subscriber_ = nh_->create_subscription<geometry_msgs::msg::Twist> (
+    subscriber_ = nh_->create_subscription<ackermann_msgs::msg::AckermannDrive> (
       topic_,
       1,
       std::bind(&VelocityTopicHandle::callback, this, std::placeholders::_1)
@@ -162,7 +162,7 @@ public:
     return hasExpired() or (getPriority() < lock_priority);
   }
 
-  void callback(const geometry_msgs::msg::Twist::SharedPtr msg)
+  void callback(const ackermann_msgs::msg::AckermannDrive::SharedPtr msg)
   {
     stamp_ = nh_->now();
     msg_   = *msg;

@@ -33,16 +33,16 @@
  * @param new_twist New velocity
  * @return true is any of the absolute velocity components has increased
  */
-bool hasIncreasedAbsVelocity(const geometry_msgs::msg::Twist& old_twist, const geometry_msgs::msg::Twist& new_twist)
+bool hasIncreasedAbsVelocity(const ackermann_msgs::msg::AckermannDrive& old_msg, const ackermann_msgs::msg::AckermannDrive& new_msg)
 {
-  const auto old_linear_x = std::abs(old_twist.linear.x);
-  const auto new_linear_x = std::abs(new_twist.linear.x);
+  const auto old_linear = std::abs(old_msg.speed);
+  const auto new_linear = std::abs(new_msg.speed);
 
-  const auto old_angular_z = std::abs(old_twist.angular.z);
-  const auto new_angular_z = std::abs(new_twist.angular.z);
+  const auto old_steering_angle = std::abs(old_msg.steering_angle);
+  const auto new_steering_angle = std::abs(new_msg.steering_angle);
 
-  return (old_linear_x  < new_linear_x ) or
-         (old_angular_z < new_angular_z);
+  return (old_linear  < new_linear) or
+         (old_steering_angle < new_steering_angle);
 }
 
 namespace twist_mux
@@ -62,7 +62,7 @@ void TwistMux::init(std::shared_ptr<rclcpp::Node> node)
   getTopicHandles(node, "topics", *velocity_hs_);
 
   /// Publisher for output topic:
-  cmd_pub_ = create_publisher<geometry_msgs::msg::Twist>("cmd_vel_out", 1);
+  cmd_pub_ = create_publisher<ackermann_msgs::msg::AckermannDrive>("cmd_vel_out", 1);
 
   /// Diagnostics:
   status_      = std::make_shared<status_type>();
@@ -87,7 +87,7 @@ void TwistMux::updateDiagnostics()
   diagnostics_->updateStatus(status_);
 }
 
-void TwistMux::publishTwist(const geometry_msgs::msg::Twist::ConstPtr& msg)
+void TwistMux::publishTwist(const ackermann_msgs::msg::AckermannDrive::ConstPtr& msg)
 {
   cmd_pub_->publish(*msg);
 }

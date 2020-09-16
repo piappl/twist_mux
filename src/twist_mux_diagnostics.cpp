@@ -30,7 +30,7 @@ void xdiagnostics(diagnostic_updater::DiagnosticStatusWrapper &stat)
   std::cout << "Xdiag\n";
 }
 
-TwistMuxDiagnostics::TwistMuxDiagnostics(std::shared_ptr<rclcpp::Node> &node, const status_type::ConstPtr &status)
+TwistMuxDiagnostics::TwistMuxDiagnostics(std::shared_ptr<rclcpp::Node> node, const status_type::ConstPtr &status)
     : diagnostic_(node)
 {
   diagnostic_updater::TaskFunction func = std::bind(

@@ -56,9 +56,9 @@ public:
   TwistMux();
   ~TwistMux();
 
-  bool hasPriority(const VelocityTopicHandle& twist);
+  void init();
 
-  void init(std::shared_ptr<rclcpp::Node> node);
+  bool hasPriority(const VelocityTopicHandle& twist);
 
   void publishTwist(const ackermann_msgs::msg::AckermannDrive::ConstPtr& msg);
 

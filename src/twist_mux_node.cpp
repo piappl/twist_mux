@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
   setvbuf(stdout, NULL, _IONBF, BUFSIZ);
   rclcpp::init(argc, argv);
   std::shared_ptr<twist_mux::TwistMux> mux = std::make_shared<twist_mux::TwistMux>();
-  mux->init(mux);
+  mux->init();
   rclcpp::spin(mux);
   rclcpp::shutdown();
 

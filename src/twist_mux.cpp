@@ -52,14 +52,16 @@ TwistMux::TwistMux() : rclcpp::Node("twist_mux")
 {
 }
 
-void TwistMux::init(std::shared_ptr<rclcpp::Node> node)
+void TwistMux::init()
 {
   /// Get topics and locks:
   velocity_hs_ = std::make_shared<velocity_topic_container>();
   lock_hs_     = std::make_shared<lock_topic_container>();
-  getTopicHandles(node, "locks" , *lock_hs_ );
 
-  getTopicHandles(node, "topics", *velocity_hs_);
+  // std::shared_ptr<rclcpp::Node> mux = ;
+  getTopicHandles(shared_from_this(), "locks" , *lock_hs_ );
+
+  getTopicHandles(shared_from_this(), "topics", *velocity_hs_);
 
   /// Publisher for output topic:
   cmd_pub_ = create_publisher<ackermann_msgs::msg::AckermannDrive>("cmd_vel_out", 1);
@@ -68,7 +70,7 @@ void TwistMux::init(std::shared_ptr<rclcpp::Node> node)
   status_      = std::make_shared<status_type>();
   status_->velocity_hs = velocity_hs_;
   status_->lock_hs     = lock_hs_;
-  diagnostics_ = std::make_shared<diagnostics_type>(node, status_);
+  diagnostics_ = std::make_shared<diagnostics_type>(shared_from_this(), status_);
 
 
   diagnostics_timer_ = create_wall_timer(

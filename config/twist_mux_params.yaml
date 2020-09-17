@@ -1,4 +1,4 @@
-twist_mux:
+/**:
   ros__parameters:
     # Input topics handled/muxed.
     # For each topic:
@@ -9,22 +9,22 @@ twist_mux:
     topics:
       0:
         name    : navigation
-        topic   : nav_vel
+        topic   : "/nav_vel"
         timeout : 1.0
         priority: 10
       1:
         name    : joystick
-        topic   : joy_vel
+        topic   : "/joy_vel"
         timeout : 1.5
         priority: 100
       2:
         name    : keyboard
-        topic   : key_vel
+        topic   : "/key_vel"
         timeout : 1.5
         priority: 90
       3:
         name    : tablet
-        topic   : tab_vel
+        topic   : "/tab_vel"
         timeout : 1.5
         priority: 100
     # Locks to stop the twist inputs.

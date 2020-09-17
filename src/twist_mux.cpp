@@ -64,7 +64,7 @@ void TwistMux::init()
   getTopicHandles(shared_from_this(), "topics", *velocity_hs_);
 
   /// Publisher for output topic:
-  cmd_pub_ = create_publisher<ackermann_msgs::msg::AckermannDrive>("cmd_vel_out", 1);
+  cmd_pub_ = create_publisher<ackermann_msgs::msg::AckermannDrive>("cmd_vel", 1);
 
   /// Diagnostics:
   status_      = std::make_shared<status_type>();

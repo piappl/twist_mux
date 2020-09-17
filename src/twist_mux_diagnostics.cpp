@@ -25,11 +25,6 @@
 
 namespace twist_mux {
 
-void xdiagnostics(diagnostic_updater::DiagnosticStatusWrapper &stat)
-{
-  std::cout << "Xdiag\n";
-}
-
 TwistMuxDiagnostics::TwistMuxDiagnostics(std::shared_ptr<rclcpp::Node> node, const status_type::ConstPtr &status)
     : diagnostic_(node)
 {
@@ -44,7 +39,7 @@ TwistMuxDiagnostics::TwistMuxDiagnostics(std::shared_ptr<rclcpp::Node> node, con
   status_.lock_hs = status->lock_hs;
 }
 
-TwistMuxDiagnostics::~TwistMuxDiagnostics() { std::cout << "destructor \n"; }
+TwistMuxDiagnostics::~TwistMuxDiagnostics() { }
 
 void TwistMuxDiagnostics::update() { diagnostic_.force_update(); }
 
